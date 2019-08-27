@@ -43,13 +43,13 @@ func main() {
 	parsedConsulAddr, err := url.ParseRequestURI(*consulAddr)
 	if err != nil || parsedConsulAddr.Scheme == "" || parsedConsulAddr.Hostname() == "" {
 		log.Errorf("provided consul url is invalid, got '%s'", *consulAddr)
-		return
+		os.Exit(1)
 	}
 
 	parsedTargetUri, err := url.ParseRequestURI(*targetUri)
 	if err != nil || parsedTargetUri.Scheme == "" || parsedTargetUri.Host == "" {
 		log.Errorf("provided target url is invalid, got '%s'", *targetUri)
-		return
+		os.Exit(1)
 	}
 
 	log.Infof("consul host: %s", *consulAddr)
@@ -71,14 +71,14 @@ func main() {
 
 	if err != nil {
 		log.Errorf("error creating consul client: %s", err)
-		return
+		os.Exit(1)
 	}
 
 	data, _, err := consulClient.Snapshot().Save(nil)
 
 	if err != nil {
 		log.Errorf("error fetching consul snapshot: %s", err)
-		return
+		os.Exit(1)
 	}
 
 	snapshot, err := ioutil.ReadAll(data)
@@ -87,7 +87,7 @@ func main() {
 
 	if err != nil {
 		log.Errorf("error reading consul snapshot: %s", err)
-		return
+		os.Exit(1)
 	}
 
 	snapshotKey := fmt.Sprintf("%d.snap", time.Now().Unix())
@@ -102,7 +102,7 @@ func main() {
 
 	if err != nil {
 		log.Errorf("error uploading to s3: %s", err)
-		return
+		os.Exit(1)
 	}
 }
 
