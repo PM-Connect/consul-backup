@@ -24,7 +24,7 @@ type Target struct {
 }
 
 func main() {
-	consulAddr := flag.String("consul-addr", "http://127.0.0.1:8500", "The address of the consul server, including protocol (http/https)")
+	consulAddr := flag.String("consul-addr", "", "The address of the consul server, including protocol (http/https)")
 	consulTlsSkipVerify := flag.Bool("consul-tls-skip-verify", false, "Skip verifying the consul tls connection.")
 	targetUri := flag.String("target", "", "The target to send the backup to. Format: {provider}://{path_on_provider} (eg, s3://my-bucket/consul-snapshots")
 
