@@ -119,11 +119,24 @@ func sendToS3(target *Target, snapshotKey *string, snapshot *[]byte) error {
 
 	s3Path := fmt.Sprintf("%s/%s", target.Path, *snapshotKey)
 
+	retries := 0
+
 	_, err = svc.PutObject(&s3.PutObjectInput{
 		Bucket: &target.Base,
 		Body: bytes.NewReader(*snapshot),
 		Key: &s3Path,
 	})
+
+	for err != nil && retries < 3 {
+		retries += 1
+		log.Warnf("error uploading to aws, retrying in 5 seconds for retry %d/%d", retries, 5)
+		time.Sleep(time.Second * 5)
+		_, err = svc.PutObject(&s3.PutObjectInput{
+			Bucket: &target.Base,
+			Body: bytes.NewReader(*snapshot),
+			Key: &s3Path,
+		})
+	}
 
 	if err != nil {
 		return err
