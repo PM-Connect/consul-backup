@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/url"
+	"os"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -28,6 +29,16 @@ func main() {
 	targetUri := flag.String("target", "", "The target to send the backup to. Format: {provider}://{path_on_provider} (eg, s3://my-bucket/consul-snapshots")
 
 	flag.Parse()
+
+	if len(*consulAddr) == 0 {
+		envConsulAddr := os.Getenv("CONSUL_ADDR")
+		consulAddr = &envConsulAddr
+	}
+
+	if len(*targetUri) == 0 {
+		envTargetUri := os.Getenv("TARGET_URI")
+		targetUri = &envTargetUri
+	}
 
 	parsedConsulAddr, err := url.ParseRequestURI(*consulAddr)
 	if err != nil || parsedConsulAddr.Scheme == "" || parsedConsulAddr.Hostname() == "" {
