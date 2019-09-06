@@ -136,20 +136,29 @@ func main() {
 	snapshotKvs, _, err := dummyConsulClient.KV().List("/", nil)
 	liveKvs, _, err := consulClient.KV().List("/", nil)
 
-	snapshotKeys := []string{}
+	var snapshotKeys []string
+	var snapshotTotalBytes int64
+	var liveTotalBytes int64
 
 	for _, kv := range snapshotKvs {
+		snapshotTotalBytes += int64(len(kv.Value))
 		snapshotKeys = append(snapshotKeys, kv.Key)
 	}
 
 	for _, kv := range liveKvs {
+		liveTotalBytes += int64(len(kv.Value))
 		if !contains(snapshotKeys, kv.Key) {
 			log.Errorf("key %s was not found in the snapshot", kv.Key)
 			os.Exit(1)
 		}
 	}
 
-	log.Info("verified all live keys are contained within the snapshot")
+	if liveTotalBytes < snapshotTotalBytes - 1000 || liveTotalBytes > snapshotTotalBytes + 1000 {
+		log.Errorf("different snapshot kv size detected, got %d expected %d", snapshotTotalBytes, liveTotalBytes)
+		os.Exit(1)
+	}
+
+	log.Infof("verified all keys are contained within the snapshot, got %d keys", len(snapshotKeys))
 
 	snapshotKey := fmt.Sprintf("%d.snap", time.Now().Unix())
 
