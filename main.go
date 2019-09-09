@@ -122,6 +122,7 @@ func main() {
 		os.Exit(1)
 	}
 
+	log.Info("waiting for consul server to become ready")
 	time.Sleep(time.Second * 2)
 
 	reader := bytes.NewReader(snapshot)

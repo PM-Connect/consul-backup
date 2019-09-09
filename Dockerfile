@@ -20,13 +20,16 @@ RUN set -eux; \
     GOOS=linux CGO_ENABLED=0 GOGC=off GOARCH=amd64 go build -o consul-backup .; \
     chmod +x consul-backup
 
-FROM alpine as certs
+FROM alpine as addons
 
-RUN apk add -U --no-cache ca-certificates
+RUN set -eux; \
+    apk add -U --no-cache ca-certificates; \
+    mkdir /scratch_tmp
 
 FROM scratch as production
 
-COPY --from=certs /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+COPY --from=addons /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+COPY --from=addons /scratch_tmp /tmp
 COPY --from=compiler /app/consul-backup /
 
 ENTRYPOINT ["/consul-backup"]
